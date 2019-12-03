@@ -3,8 +3,8 @@ set -eo pipefail
 
 PREFIX="usr"
 SPREFIX=${PREFIX}
-SUBPREFIX="opt/${PROJECT}/${VERSION}"
-SSUBPREFIX="opt\/${PROJECT}\/${VERSION}"
+SUBPREFIX="opt/wax-mv/${VERSION}"
+SSUBPREFIX="opt\/wax-mv\/${VERSION}"
 RELEASE="${VERSION_SUFFIX}"
 
 # default release to "1" if there is no suffix

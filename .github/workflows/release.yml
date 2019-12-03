@@ -1,0 +1,39 @@
+name: Build release assets
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    name: "Platform: ${{ matrix.platform }}"
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        platform: [ ubuntu-16.04, ubuntu-18.04 ]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Compile
+        run: |
+            git submodule update --init --recursive
+            sudo apt-get update --fix-missing
+            ./scripts/eosio_build.sh -y -s WAX
+
+      - name: Package
+        id: package
+        run : |
+            cd build/packages/
+            chmod +x generate_package.sh && fakeroot ./generate_package.sh deb
+            PLATFORM="${{ matrix.platform }}"
+            SRC=$(find . -type f -name "*.deb" 2> /dev/null)
+            TARGET=$(echo $SRC | sed "s/\(.*\)_\(.*\).deb\$/\1_${PLATFORM}_\2.deb/g")
+            mv $SRC $TARGET
+            echo ::set-output name=filename::$TARGET
+
+      - name: Upload
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: build/packages/${{ steps.package.outputs.filename }} application/vnd.debian.binary-package
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
